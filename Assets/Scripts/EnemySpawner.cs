@@ -1,28 +1,43 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemySpawner : MonoBehaviour
+namespace TowerDefense
 {
-    [SerializeField] private GameObject enemyPrefab;
-    [SerializeField] private float spawnDelay;
-    [field: SerializeField] public List<Transform> Path { get; private set; } = new List<Transform>();
-    public List<Transform> enemiesSpawned = new List<Transform>();
-    private float lastSpawnTime;
-
-    private void Awake()
+    public class EnemySpawner : MonoBehaviour
     {
-        lastSpawnTime = Time.time;
-    }
-
-    private void Update()
-    {
-        var x = 0f;
-        if (Time.time - lastSpawnTime > spawnDelay)
+        [Serializable]
+        public struct EnemySpawningData
         {
-            var instantiated = Instantiate(enemyPrefab, transform.position, Quaternion.identity);
-            instantiated.GetComponent<EnemyMovement>().Init(Path);
-            enemiesSpawned.Add(instantiated.transform);
-            lastSpawnTime = Time.time;
+            public GameObject prefab;
+            public float spawnDelay;
+        }
+
+        public event Action EnemySpawned;
+
+        [SerializeField] private EnemySpawningData spawningData;
+        [SerializeField] private GroundEnemy.InitData enemyInitData;
+        private List<Transform> spawnedEnemies = new List<Transform>();
+        private float spawnTimer;
+
+        private void Update()
+        {
+            var shouldSpawn = spawnTimer > spawningData.spawnDelay;
+            if (shouldSpawn)
+            {
+                SpawnEnemy();
+                spawnTimer = 0f;
+            }
+
+            spawnTimer += Time.deltaTime;
+        }
+
+        private void SpawnEnemy()
+        {
+            var instantiated = Instantiate(spawningData.prefab, transform.position, Quaternion.identity);
+            instantiated.GetComponent<GroundEnemy>().Init(enemyInitData);
+            spawnedEnemies.Add(instantiated.transform);
+            EnemySpawned?.Invoke();
         }
     }
 }
