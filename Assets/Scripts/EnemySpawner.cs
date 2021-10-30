@@ -17,7 +17,8 @@ namespace TowerDefense
 
         [SerializeField] private EnemySpawningData spawningData;
         [SerializeField] private GroundEnemy.InitData enemyInitData;
-        private List<Transform> spawnedEnemies = new List<Transform>();
+
+        public List<Transform> SpawnedEnemies { get; private set; } = new List<Transform>();
         private float spawnTimer;
 
         private void Update()
@@ -35,8 +36,12 @@ namespace TowerDefense
         private void SpawnEnemy()
         {
             var instantiated = Instantiate(spawningData.prefab, transform.position, Quaternion.identity);
-            instantiated.GetComponent<GroundEnemy>().Init(enemyInitData);
-            spawnedEnemies.Add(instantiated.transform);
+
+            var groundEnemy = instantiated.GetComponent<GroundEnemy>();
+            groundEnemy.Init(enemyInitData);
+            groundEnemy.PathBasedMovement.ReachedEnd += () => SpawnedEnemies.Remove(groundEnemy.transform);
+
+            SpawnedEnemies.Add(instantiated.transform);
             EnemySpawned?.Invoke();
         }
     }
