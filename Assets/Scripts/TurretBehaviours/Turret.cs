@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace TowerDefense
@@ -10,6 +11,7 @@ namespace TowerDefense
         {
             public float range;
             public LayerMask enemyLayer;
+            public List<Transform> path;
         }
         [System.Serializable]
         public struct RotatorData
@@ -17,7 +19,7 @@ namespace TowerDefense
             public float turnSpeed;
             public Transform gunPivot;
         }
-        [SerializeField] private EnemySpawner spawner;
+
         [SerializeField] private TurretTargetProviderData targetProviderData;
         [SerializeField] private RotatorData rotatorData;
         /*[SerializeField] private float rotSpeed;
@@ -28,13 +30,13 @@ namespace TowerDefense
 
         private ITurretTargetProvider targetProvider;
         private TurretRotator rotator;
-        private void Awake()
+        public void Init(List<Transform> path)
         {
             targetProvider = new PathTurretTargetProvider(
                targetProviderData.range,
                transform,
                targetProviderData.enemyLayer,
-               spawner
+               path
             );
             rotator = new TurretRotator(
                 rotatorData.gunPivot,
@@ -44,26 +46,7 @@ namespace TowerDefense
 
         private void Update()
         {
-            /*var hits = Physics2D.OverlapCircleAll(transform.position, range);
-            if (hits.Length <= 0) return;
-            var enemies = hits.Where(h => spawner.enemiesSpawned.Contains(h.transform)).Select(h => h.GetComponent<PathBasedMovement>());
-            var highestIndex = enemies.Select(enemy => enemy.CurrentTarget).Max();
-            var furthestPoint = spawner.Path[highestIndex];
-            Transform furthestEnemy = null;
-            foreach (var enemy in enemies.Where(enemy => enemy.CurrentTarget == highestIndex))
-            {
-                if (furthestEnemy == null) furthestEnemy = enemy.transform;
-                else
-                {
-                    var isFarther = (furthestPoint.position - enemy.transform.position).sqrMagnitude <
-                                    (furthestPoint.position - furthestEnemy.position).sqrMagnitude;
-                    if (isFarther) furthestEnemy = enemy.transform;
-                }
-            }*/
-
-            /*
-            );*/
-            rotator.Rotate(Time.deltaTime, targetProvider);
+            rotator?.Rotate(Time.deltaTime, targetProvider);
         }
     }
 }
